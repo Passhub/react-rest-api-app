@@ -3,15 +3,17 @@ import { Layout, Menu, Icon } from 'antd';
 import { BrowserRouter as Router, Route, Link} from "react-router-dom";
 
 import FullInfo from './components/FullInfo';
+import SubMenu from 'antd/lib/menu/SubMenu';
 
 const {Sider, Header, Content, Footer} = Layout;
+
 
 class App extends Component {
 
   state = {
     users: null
-  }
-
+  } 
+                    
   componentDidMount = async () => {
     fetch('https://jsonplaceholder.typicode.com/users')
       .then(responce => responce.json())
@@ -21,7 +23,7 @@ class App extends Component {
   render() {
     return (
       <Router>
-      <div>
+      <div> 
         {
           this.state.users !== null && 
           <div>
@@ -39,7 +41,7 @@ class App extends Component {
             >
               <div className="logo" />
               <Menu theme="light" mode="inline">
-                {this.state.users.map((user) => {
+                {/* {this.state.users.map((user) => {
                   console.log(user);
                   return(
                     <Menu.Item key={user.id}>
@@ -49,6 +51,31 @@ class App extends Component {
                       </Link>
                     </Menu.Item>
                   )
+                })} */}
+                {this.state.users.map((user) => {
+                  console.log(user);
+                  return(
+                    <SubMenu key={user.id} title={<span><Icon type="idcard" />{user.name}</span>}>
+                      <Menu.Item key={user.name+1}>
+                        <Link style={{ display:'inline-block' }} to={{ pathname: `/user/info/${user.id}`, state: { user: user }, }}>
+                          <Icon type="info-circle" />
+                          <span>Full info</span>
+                        </Link>
+                      </Menu.Item>
+                      <Menu.Item key={user.name+2}>
+                        <Link style={{ display:'inline-block' }} to={{ pathname: `/user/todos/${user.id}`, state: { user_id: user.id }, }}>
+                          <Icon type="check" />
+                          <span>To Do list</span>
+                        </Link>
+                      </Menu.Item>
+                      <Menu.Item key={user.name+3}>
+                        <Link style={{ display:'inline-block' }} to={{ pathname: `/user/post/${user.id}`, state: { user_id: user.id }, }}>
+                          <Icon type="project" />
+                          <span>Posts</span>
+                        </Link>
+                      </Menu.Item>
+                    </SubMenu>
+                  )
                 })}
               </Menu>
             </Sider>
@@ -57,10 +84,12 @@ class App extends Component {
               {/* <Header style={{ background: '#fff', padding: 0 }} /> */}
               <Content style={{ margin: '24px 16px 0'}} height={400}>
                 <div style={{ padding: 24, background: '#fff', minHeight: 360, height: '90vh', fontSize: 26 }}>
+                  
+                  <Route path="/user/info/:id" component={FullInfo} /> 
 
-                  {this.state.users.map((user, index) =>(
-                    <Route key={index} path={`/user/${user.id}`} component={FullInfo} />
-                  ))}
+                  {/* {this.state.users.map((user, index) =>( */}
+                  {/* <Route key={index} path={`/user/${user.id}`} component={FullInfo} />
+                   ))} */}
 
                 </div>
               </Content>

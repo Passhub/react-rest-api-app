@@ -146,6 +146,35 @@ class EditableTable extends React.Component {
   },
 ];
 
+componentDidMount(){
+  // fetch('https://jsonplaceholder.typicode.com/todos')
+  //   .then(responce => responce.json())
+  //   .then(data => this.setState({ todos: data}));
+
+  this.props.dispatch(fetchTodos());
+}
+  componentDidUpdate(prevProps){ 
+    let todos = this.props.todos;
+    // console.log('location:', this.props)
+
+    if(this.props.todos){
+      todos = this.props.todos.filter(item => 
+        item.userId === this.props.location.state.user_id);
+        // console.log('changed todos:', todos);
+
+    if(this.state.dataSource.length === 0){
+      this.setState({
+        dataSource: todos.map((item, key) => {return{...item, key}})
+      })
+    }    
+    else if(this.props.location.key !== prevProps.location.key){
+      // console.log('location changed')
+      this.setState({
+        dataSource: todos.map((item, key) => {return{...item, key}})
+      })
+    }
+  }
+}
 
   // onChange(e) {
   //   console.log(`checked = ${e.target.checked}`);
@@ -186,36 +215,6 @@ class EditableTable extends React.Component {
         console.log('handleDataAdd AFTER', this.state.dataSource);
     }); 
 }
-
-  componentDidMount(){
-    // fetch('https://jsonplaceholder.typicode.com/todos')
-    //   .then(responce => responce.json())
-    //   .then(data => this.setState({ todos: data}));
-
-    this.props.dispatch(fetchTodos());
-  }
-  componentDidUpdate(prevProps){ 
-    let todos = this.props.todos;
-    // console.log('location:', this.props)
-
-    if(this.props.todos){
-      todos = this.props.todos.filter(item => 
-        item.userId === this.props.location.state.user_id);
-        // console.log('changed todos:', todos);
-
-    if(this.state.dataSource.length === 0){
-      this.setState({
-        dataSource: todos.map((item, key) => {return{...item, key}})
-      })
-    }    
-    else if(this.props.location.key !== prevProps.location.key){
-      // console.log('location changed')
-      this.setState({
-        dataSource: todos.map((item, key) => {return{...item, key}})
-      })
-    }
-  }
-  }
 
   render() {
 

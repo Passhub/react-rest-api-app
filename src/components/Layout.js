@@ -1,6 +1,9 @@
 import React from 'react';
 import { Layout, Menu, Icon } from 'antd';
 import { Link } from "react-router-dom";
+import { connect } from 'react-redux';
+
+import { fetchUsers } from '../Actions/users'
 
 // import FullInfo from './FullInfo'
 
@@ -14,17 +17,31 @@ class Layout1 extends React.Component {
   } 
                     
   componentDidMount = async () => {
-    fetch('https://jsonplaceholder.typicode.com/users')
-      .then(responce => responce.json())
-      .then(data => this.setState({ users: data }));
+    // fetch('https://jsonplaceholder.typicode.com/users')
+    //   .then(responce => responce.json())
+    //   .then(data => this.setState({ users: data }));
+
+    this.props.dispatch(fetchUsers());
+
   }
 
   render() {
-    console.log(123123, this.props);
+
+    const { error, loading, users} = this.props;
+
+    if(error){
+      return <div>error! {error.message}</div>
+    }
+
+    if(loading){
+      return <div style={{ textAlign: 'center', width: '100%', height: '80vh', lineHeight: '80vh' }}><Icon type="loading" /></div>
+    }
+
+    console.log('Layout', this.props);
     return (
       <div> 
         { 
-          this.state.users !== null && 
+          users !== null && 
           <div>
           <Layout style={{ height: '100vh'}}>
             
@@ -32,7 +49,7 @@ class Layout1 extends React.Component {
               width = {300}
               breakpoint="lg"
               collapsedWidth="0"
-              onBreakpoint={(broken) => { console.log(broken); }}
+              //onBreakpoint={(broken) => { console.log(broken); }}
               onCollapse={(collapsed, type) => { console.log(collapsed, type); }}
               style={{
                 overflow: 'auto', height: '100vh' , position: 'fixed', left: 0, backgroundColor: 'white'
@@ -40,8 +57,8 @@ class Layout1 extends React.Component {
             >
               <div className="logo" />
               <Menu theme="light" mode="inline">
-                {this.state.users.map((user) => {
-                  console.log(user);
+                {users.map((user) => {
+                  //console.log(user);
                   return(
                     <SubMenu key={user.id} title={<span><Icon type="idcard" />{user.name}</span>}>
                       <Menu.Item key={user.name+1}>
@@ -87,4 +104,11 @@ class Layout1 extends React.Component {
   }
 }
 
-export default Layout1
+const mapStateToProps = state => ({
+  users: state.users.items,
+  loading: state.users.loading,
+  error: state.users.error
+});
+
+
+export default connect (mapStateToProps)(Layout1);

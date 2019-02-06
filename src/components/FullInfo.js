@@ -2,7 +2,7 @@ import React from 'react';
 
 const FullInfo = (props) => {
 
-    console.log(props.location.state.user);
+    // console.log('rendered: ',props.location.state.user);
     if(props.location.state.user !== null){
     const { name, username, phone, website, address ,company} = props.location.state.user;
 
@@ -19,7 +19,7 @@ const FullInfo = (props) => {
         </div>
       )
     }
-    else return <div>Hello!</div>
+    else return <div></div>
   }
 
 export default FullInfo

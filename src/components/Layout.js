@@ -3,15 +3,15 @@ import { Layout, Menu, Icon } from 'antd';
 import { Link } from "react-router-dom";
 import { connect } from 'react-redux';
 
-import { fetchUsers } from '../Actions/users'
-
-// import FullInfo from './FullInfo'
+import { fetchUsers } from '../Actions/users';
+import { fetchTodos } from '../Actions/todos';
+import { fetchPosts } from '../Actions/posts';
 
 import SubMenu from 'antd/lib/menu/SubMenu';
 
 const { Sider, Content, Footer } = Layout;
 
-class Layout1 extends React.Component {
+class MainLayout extends React.Component {
   state = {
     users: null
   } 
@@ -22,12 +22,13 @@ class Layout1 extends React.Component {
     //   .then(data => this.setState({ users: data }));
 
     this.props.dispatch(fetchUsers());
+    this.props.dispatch(fetchTodos());
+    this.props.dispatch(fetchPosts());
 
   }
 
   render() {
-
-    const { error, loading, users} = this.props;
+    const { error, loading, users } = this.props;
 
     if(error){
       return <div>error! {error.message}</div>
@@ -37,19 +38,19 @@ class Layout1 extends React.Component {
       return <div style={{ textAlign: 'center', width: '100%', height: '80vh', lineHeight: '80vh' }}><Icon type="loading" /></div>
     }
 
-    console.log('Layout', this.props);
     return (
       <div> 
         { 
-          users !== null && 
+          // users !== null && 
           <div>
+            {/* {console.log('props:',this.props)} */}
           <Layout style={{ height: '100vh'}}>
             
             <Sider
               width = {300}
               breakpoint="lg"
               collapsedWidth="0"
-              //onBreakpoint={(broken) => { console.log(broken); }}
+              // onBreakpoint={(broken) => { console.log(broken); }}
               onCollapse={(collapsed, type) => { console.log(collapsed, type); }}
               style={{
                 overflow: 'auto', height: '100vh' , position: 'fixed', left: 0, backgroundColor: 'white'
@@ -58,7 +59,6 @@ class Layout1 extends React.Component {
               <div className="logo" />
               <Menu theme="light" mode="inline">
                 {users.map((user) => {
-                  //console.log(user);
                   return(
                     <SubMenu key={user.id} title={<span><Icon type="idcard" />{user.name}</span>}>
                       <Menu.Item key={user.name+1}>
@@ -86,7 +86,6 @@ class Layout1 extends React.Component {
             </Sider>
 
             <Layout style={{  marginLeft: '300px' }}>
-              {/* <Header style={{ background: '#fff', padding: 0 }} /> */}
               <Content style={{ margin: '24px 16px 0'}} height={400}>
                 <div style={{ padding: 24, background: '#fff', minHeight: 360, height: '90vh', fontSize: 26 }}>
                   {this.props.children}
@@ -105,10 +104,12 @@ class Layout1 extends React.Component {
 }
 
 const mapStateToProps = state => ({
+  todos: state.todos.items,
+  posts: state.posts.items,
   users: state.users.items,
   loading: state.users.loading,
   error: state.users.error
 });
 
 
-export default connect (mapStateToProps)(Layout1);
+export default connect (mapStateToProps)(MainLayout);

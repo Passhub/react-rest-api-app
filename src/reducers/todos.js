@@ -1,7 +1,8 @@
 import {
   FETCH_TODOS_BEGIN,
   FETCH_TODOS_SUCCESS,
-  FETCH_TODOS_FAILURE
+  FETCH_TODOS_FAILURE,
+  TODOS_CHANGED
 } from "../Actions/todos";
 
 const initialState = {
@@ -24,7 +25,7 @@ export default function todosReducer(state = initialState, action){
         ...state,
         loading: false,
         items: action.payload.todos
-      }
+      };
 
     case FETCH_TODOS_FAILURE:
       return {
@@ -32,6 +33,13 @@ export default function todosReducer(state = initialState, action){
         loading: false,
         error: action.payload.error,
         items: []
+      };
+
+    case TODOS_CHANGED:
+      console.log('Reducers todos...',TODOS_CHANGED);
+      return {
+        ...state,
+        items: [...state.items, action.payload]
       }
 
     default: 

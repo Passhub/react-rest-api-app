@@ -1,123 +1,22 @@
 import React from 'react';
 import 'antd/dist/antd.css';
-import {
-  Table, Input, Button, Popconfirm, Form, Checkbox, Icon
-} from 'antd';
+import { Table, Popconfirm, Checkbox, Icon } from 'antd';
 
+import { changeTodos } from '../Actions/todos';
 import { connect } from "react-redux";
-import { fetchTodos } from '../Actions/todos';
+import EditableCell from './EditableTable';
+import { EditableFormRow } from './EditableTable'
+import { WrappedHorizontalAddTodoForm } from './Form'
 
-const FormItem = Form.Item;
-const EditableContext = React.createContext();
-
-const EditableRow = ({ form, index, ...props }) => (
-  <EditableContext.Provider value={form}>
-    <tr {...props} />
-  </EditableContext.Provider>
-);
-
-const EditableFormRow = Form.create()(EditableRow);
-
-class EditableCell extends React.Component {
-  state = {
-    editing: false,
-  }
-
-  componentDidMount() {
-    if (this.props.editable) {
-      document.addEventListener('click', this.handleClickOutside, true);
-    }
-  }
-
-  componentWillUnmount() {
-    if (this.props.editable) {
-      document.removeEventListener('click', this.handleClickOutside, true);
-    }
-  }
-
-  toggleEdit = () => {
-    const editing = !this.state.editing;
-    this.setState({ editing }, () => {
-      if (editing) {
-        this.input.focus();
-      }
-    });
-  }
-
-  handleClickOutside = (e) => {
-    const { editing } = this.state;
-    if (editing && this.cell !== e.target && !this.cell.contains(e.target)) {
-      this.save();
-    }
-  }
-
-  save = () => {
-    const { record, handleSave } = this.props;
-    this.form.validateFields((error, values) => {
-      if (error) {
-        return;
-      }
-      this.toggleEdit();
-      handleSave({ ...record, ...values });
-    });
-  }
-
-  render() {
-    const { editing } = this.state;
-    const {
-      editable,
-      dataIndex,
-      title,
-      record,
-      index,
-      handleSave,
-      ...restProps
-    } = this.props;
-    return (
-      <td ref={node => (this.cell = node)} {...restProps}>
-        {editable ? (
-          <EditableContext.Consumer>
-            {(form) => {
-              this.form = form;
-              return (
-                editing ? (
-                  <FormItem style={{ margin: 0 }}>
-                    {form.getFieldDecorator(dataIndex, {
-                      rules: [{
-                        required: true,
-                        message: `${title} is required.`,
-                      }],
-                      initialValue: record[dataIndex],
-                    })(
-                      <Input
-                        ref={node => (this.input = node)}
-                        onPressEnter={this.save}
-                      />
-                    )}
-                  </FormItem>
-                ) : (
-                  <div
-                    className="editable-cell-value-wrap"
-                    style={{ paddingRight: 24 }}
-                    onClick={this.toggleEdit}
-                  >
-                    {restProps.children}
-                  </div>
-                )
-              );
-            }}
-          </EditableContext.Consumer>
-        ) : restProps.children}
-      </td>
-    );
-  }
-}
+const v4 = require('uuid/v4');
 
 class EditableTable extends React.Component {
 
   state = {
     todos: null,
     dataSource: [],
+    checked: false,
+    inputValue: '',
 }
 
   columns = [
@@ -125,7 +24,16 @@ class EditableTable extends React.Component {
     title: 'Status',
     dataIndex: 'status',
     width: '9vh',
-    render: () => (<Checkbox style={{ marginLeft: 15 }}></Checkbox>),
+    render: () => (
+      <div>
+        <Checkbox 
+          checked={this.state.checked} 
+          onChange={(e) => {console.log(`checked = ${e.target.checked}`);
+          this.setState({checked: e.target.checked})}} 
+          style={{ marginLeft: 15 }}>
+        </Checkbox>
+      </div>
+    ),
     
   },{
     title: 'Todos',
@@ -146,55 +54,33 @@ class EditableTable extends React.Component {
   },
 ];
 
-componentDidMount(){
-  // fetch('https://jsonplaceholder.typicode.com/todos')
-  //   .then(responce => responce.json())
-  //   .then(data => this.setState({ todos: data}));
-
-  this.props.dispatch(fetchTodos());
-}
-  componentDidUpdate(prevProps){ 
-    let todos = this.props.todos;
-    // console.log('location:', this.props)
-
+  componentDidMount(){
     if(this.props.todos){
-      todos = this.props.todos.filter(item => 
+      let todos = this.props.todos.filter(item => 
         item.userId === this.props.location.state.user_id);
-        // console.log('changed todos:', todos);
+      if(this.state.dataSource.length === 0){
+        this.setState({
+          dataSource: todos.map((item, key) => {return{...item, key}})
+        })
+      } 
+    } 
+  }
 
-    if(this.state.dataSource.length === 0){
-      this.setState({
-        dataSource: todos.map((item, key) => {return{...item, key}})
-      })
-    }    
-    else if(this.props.location.key !== prevProps.location.key){
-      // console.log('location changed')
+  componentDidUpdate(prevProps){
+    if(this.props.location !== prevProps.location || this.props.todos !== prevProps.todos){
+      const todos = this.props.todos.filter(item => 
+        item.userId === this.props.location.state.user_id
+      );
+      console.log('props.location changed')
       this.setState({
         dataSource: todos.map((item, key) => {return{...item, key}})
       })
     }
   }
-}
-
-  // onChange(e) {
-  //   console.log(`checked = ${e.target.checked}`);
-  // }
 
   handleDelete = (key) => {
     const dataSource = [...this.state.dataSource];
     this.setState({ dataSource: dataSource.filter(item => item.key !== key) });
-  }
-
-  handleAdd = () => {
-    const { dataSource } = this.state;
-    const newData = {
-      operation: 'operation',
-      title: `Added Title overhere!`,
-      key: this.state.dataSource.length,
-    };
-    this.setState({
-      dataSource: [...dataSource, newData],
-    });
   }
 
   handleSave = (row) => {
@@ -208,20 +94,27 @@ componentDidMount(){
     this.setState({ dataSource: newData });
   }
 
-  handleDataAdd = (element) => {
-    this.setState((prevState, element) => ({
-        dataSource: prevState.employers.concat(element)
-    }), () => {
-        console.log('handleDataAdd AFTER', this.state.dataSource);
-    }); 
-}
+  addTodo = () => {
+    console.log('addTodo, todos:', this.state.Inputvalue);
+    this.props.dispatch(changeTodos({
+      userId: this.props.location.state.user_id,
+      id: v4(),
+      title: this.state.Inputvalue,
+    }));
+      this.setState({
+        Inputvalue: '',
+      });
+  }
+
+  handleChange = (e) => {
+    e.preventDefault();
+    this.setState({Inputvalue: e.target.value});
+  }
 
   render() {
 
-    const { dataSource } = this.state;
-
+    const { dataSource, Inputvalue } = this.state; 
     const { error, loading } = this.props;
-
 
     const components = {
       body: {
@@ -255,11 +148,29 @@ componentDidMount(){
     }
     
     return (
-      
       <div>
-        <Button type="primary" style={{ marginBottom: 16 }}>
-          Add a todo
-        </Button>
+        <WrappedHorizontalAddTodoForm props={this.props}/>
+          {/* <Form 
+            style={{ fontSize: 16, marginBottom: 10 }}  
+            layout="inline"
+            >
+          <Form.Item>
+            <Input 
+              style={{ width: 400 }} 
+              value={Inputvalue} 
+              onChange={this.handleChange} 
+              type="input" 
+              placeholder="Wrire a todo..." /> 
+          </Form.Item>
+          <Form.Item>
+            <Button
+              type="primary"
+              onClick={this.addTodo}
+            >
+              Add Todo
+            </Button>
+          </Form.Item>
+          </Form> */}
         <Table
           components={components}
           rowClassName={() => 'editable-row'}

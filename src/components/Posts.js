@@ -1,6 +1,5 @@
 import React from 'react';
 import { connect } from "react-redux";
-import { fetchPosts } from '../Actions/posts';
 import { Icon } from 'antd';
 
 class Posts extends React.Component {
@@ -13,12 +12,12 @@ class Posts extends React.Component {
     //   .then(responce => responce.json())
     //   .then(data => this.setState({ posts: data }));
 
-    this.props.dispatch(fetchPosts());
+    // this.props.dispatch(fetchPosts());
 
   }
 
   render() {
-
+    console.log('Posts props: ',this.props);
     const { error, loading, posts, location } = this.props;
 
     if(error){
@@ -50,6 +49,7 @@ class Posts extends React.Component {
                 <div key={post.id} style={{fontSize: 22}}>{post.title}</div>
               )
             }
+            else return <div key={post.id}></div>
           })
         }
       </div>
@@ -59,8 +59,8 @@ class Posts extends React.Component {
 
 const mapStateToProps = state => ({
   posts: state.posts.items,
-  loading: state.posts.loading,
-  error: state.posts.error
+  // loading: state.posts.loading,
+  // error: state.posts.error
 });
 
 export default connect(mapStateToProps)(Posts);

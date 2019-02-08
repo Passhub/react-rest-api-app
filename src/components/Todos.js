@@ -1,21 +1,22 @@
 import React from 'react';
+
+import { orderBy } from 'lodash';
+
 import 'antd/dist/antd.css';
 import { Table, Popconfirm, Checkbox, Icon } from 'antd';
 
-import { changeTodos } from '../Actions/todos';
+import { todoDelete, updateOldTodo, checkStatus } from '../Actions/todos';
 import { connect } from "react-redux";
 import EditableCell from './EditableTable';
-import { EditableFormRow } from './EditableTable'
-import { WrappedHorizontalAddTodoForm } from './Form'
-
-const v4 = require('uuid/v4');
+import { EditableFormRow } from './EditableTable';
+import { WrappedHorizontalAddTodoForm } from './Form';
 
 class EditableTable extends React.Component {
 
   state = {
     todos: null,
     dataSource: [],
-    checked: false,
+    checked: true,
     inputValue: '',
 }
 
@@ -24,14 +25,15 @@ class EditableTable extends React.Component {
     title: 'Status',
     dataIndex: 'status',
     width: '9vh',
-    render: () => (
-      <div>
-        <Checkbox 
-          checked={this.state.checked} 
-          onChange={(e) => {console.log(`checked = ${e.target.checked}`);
-          this.setState({checked: e.target.checked})}} 
-          style={{ marginLeft: 15 }}>
-        </Checkbox>
+    render: (text, record) => (
+      <div>{
+       <Checkbox 
+          checked={record.completed} 
+          onChange={(e) => this.props.dispatch(checkStatus({...record, completed: e.target.checked}))}
+        style={{ marginLeft: 15 }}>
+      </Checkbox>
+      }
+        
       </div>
     ),
     
@@ -47,7 +49,7 @@ class EditableTable extends React.Component {
       this.state.dataSource.length >= 1
         ? (
           <Popconfirm title="Sure to delete?" onConfirm={() => this.handleDelete(record.key)}>
-            <a href="javascript:;">Delete</a>
+            <a href="javascrip">Delete</a>
           </Popconfirm>
         ) : null
     ),
@@ -62,8 +64,8 @@ class EditableTable extends React.Component {
         this.setState({
           dataSource: todos.map((item, key) => {return{...item, key}})
         })
-      } 
-    } 
+      }
+    }
   }
 
   componentDidUpdate(prevProps){
@@ -81,6 +83,7 @@ class EditableTable extends React.Component {
   handleDelete = (key) => {
     const dataSource = [...this.state.dataSource];
     this.setState({ dataSource: dataSource.filter(item => item.key !== key) });
+    this.props.dispatch(todoDelete(dataSource[key].title))
   }
 
   handleSave = (row) => {
@@ -91,39 +94,23 @@ class EditableTable extends React.Component {
       ...item,
       ...row,
     });
-    this.setState({ dataSource: newData });
-  }
-
-  addTodo = () => {
-    console.log('addTodo, todos:', this.state.Inputvalue);
-    this.props.dispatch(changeTodos({
-      userId: this.props.location.state.user_id,
-      id: v4(),
-      title: this.state.Inputvalue,
-    }));
-      this.setState({
-        Inputvalue: '',
-      });
-  }
-
-  handleChange = (e) => {
-    e.preventDefault();
-    this.setState({Inputvalue: e.target.value});
+    this.setState({ dataSource: newData },
+      () => {this.props.dispatch(updateOldTodo(row))}, 
+      () => console.log('item:', row));
   }
 
   render() {
-
-    const { dataSource, Inputvalue } = this.state; 
+    let { dataSource } = this.state; 
     const { error, loading } = this.props;
-
     const components = {
       body: {
         row: EditableFormRow,
         cell: EditableCell,
       },
     };
-
-    const columns = this.columns.map((col) => {
+    let columns = []
+    if (dataSource.length !== 0) {
+      columns = this.columns.map((col) => {
       if (!col.editable) {
         return col;
       }
@@ -138,6 +125,7 @@ class EditableTable extends React.Component {
         }),
       };
     });
+  }
 
     if(error){
       return <div>error! {error.message}</div>
@@ -150,32 +138,11 @@ class EditableTable extends React.Component {
     return (
       <div>
         <WrappedHorizontalAddTodoForm props={this.props}/>
-          {/* <Form 
-            style={{ fontSize: 16, marginBottom: 10 }}  
-            layout="inline"
-            >
-          <Form.Item>
-            <Input 
-              style={{ width: 400 }} 
-              value={Inputvalue} 
-              onChange={this.handleChange} 
-              type="input" 
-              placeholder="Wrire a todo..." /> 
-          </Form.Item>
-          <Form.Item>
-            <Button
-              type="primary"
-              onClick={this.addTodo}
-            >
-              Add Todo
-            </Button>
-          </Form.Item>
-          </Form> */}
         <Table
           components={components}
           rowClassName={() => 'editable-row'}
           bordered
-          dataSource={dataSource}
+          dataSource={orderBy(dataSource, ['time'], ['desc'])}
           columns={columns}
         />
       </div>

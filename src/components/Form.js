@@ -1,11 +1,11 @@
 import React from 'react';
-import { changeTodos } from '../Actions/todos';
+import { addNewTodo } from '../Actions/todos';
 import {
   Form, Icon, Input, Button,
 } from 'antd';
 
-const v4 = require('uuid/v4');
-
+const moment = require('moment');
+const v4 = require('uuid/v4')
 function hasErrors(fieldsError) {
   return Object.keys(fieldsError).some(field => fieldsError[field]);
 }
@@ -13,7 +13,6 @@ function hasErrors(fieldsError) {
 class HorizontalAddTodoForm extends React.Component {
 
   state = {
-    value: '',
     id: null
   }
 
@@ -27,11 +26,13 @@ class HorizontalAddTodoForm extends React.Component {
   
   addTodo = (value) => {
     console.log('addTodo:', this.props);
-    this.props.props.dispatch(changeTodos({
+    this.props.props.dispatch(addNewTodo({
       userId: this.props.props.location.state.user_id,
       id: v4(),
-      title: JSON.stringify(value).slice(9, -2)
+      title: JSON.stringify(value).slice(9, -2),
+      time: moment().valueOf() 
     }));
+    
   }
 
   handleSubmit = (e) => {
@@ -41,6 +42,7 @@ class HorizontalAddTodoForm extends React.Component {
       if (!err) {
         console.log('Received values of form: ', values);
         this.addTodo(values);
+        
       }
     });
     this.props.form.resetFields();
@@ -48,12 +50,11 @@ class HorizontalAddTodoForm extends React.Component {
 
   render() {
     const {
-      getFieldDecorator, getFieldsError, getFieldError, isFieldTouched, getFieldValue
+      getFieldDecorator, getFieldsError, getFieldError, isFieldTouched
     } = this.props.form;
 
     // Only show error after a field is touched.
     const userNameError = isFieldTouched('todo') && getFieldError('todo');
-    //const passwordError = isFieldTouched('password') && getFieldError('password');
     return (
       <Form layout="inline" onSubmit={this.handleSubmit} style={{ marginBottom: 10 }}>
         <Form.Item
@@ -61,7 +62,7 @@ class HorizontalAddTodoForm extends React.Component {
           help={userNameError || ''}
         >
           {getFieldDecorator('todo', {
-            //rules: [{ required: true, message: 'Please write your todo!' }],
+            rules: [{ required: true, message: 'Please write your todo!' }],
           })(
             <Input  prefix={<Icon type="check" style={{ color: 'rgba(0,0,0,.25)' }} />} placeholder="Write a todo..." />
           )}

@@ -17,16 +17,11 @@ class MainLayout extends React.Component {
   } 
                     
   componentDidMount = async () => {
-    // fetch('https://jsonplaceholder.typicode.com/users')
-    //   .then(responce => responce.json())
-    //   .then(data => this.setState({ users: data }));
-
     this.props.dispatch(fetchUsers());
     this.props.dispatch(fetchTodos());
     this.props.dispatch(fetchPosts());
-
   }
-
+  
   render() {
     const { error, loading, users } = this.props;
 
@@ -41,11 +36,8 @@ class MainLayout extends React.Component {
     return (
       <div> 
         { 
-          // users !== null && 
           <div>
-            {/* {console.log('props:',this.props)} */}
           <Layout style={{ height: '100vh'}}>
-            
             <Sider
               width = {300}
               breakpoint="lg"
@@ -84,7 +76,6 @@ class MainLayout extends React.Component {
                 })}
               </Menu>
             </Sider>
-
             <Layout style={{  marginLeft: '300px' }}>
               <Content style={{ margin: '24px 16px 0'}} height={400}>
                 <div style={{ padding: 24, background: '#fff', minHeight: 360, height: '90vh', fontSize: 26 }}>

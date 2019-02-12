@@ -1,5 +1,5 @@
 import React from 'react';
-import { Layout, Menu, Icon } from 'antd';
+import { Layout, Menu, Icon, Input } from 'antd';
 import { Link } from "react-router-dom";
 import { connect } from 'react-redux';
 
@@ -12,18 +12,46 @@ import SubMenu from 'antd/lib/menu/SubMenu';
 const { Sider, Content, Footer } = Layout;
 
 class MainLayout extends React.Component {
+  
   state = {
-    users: null
+    Users: []
   } 
                     
-  componentDidMount = async () => {
+  componentDidMount = () => {
     this.props.dispatch(fetchUsers());
     this.props.dispatch(fetchTodos());
     this.props.dispatch(fetchPosts());
+    if(this.props.users){
+      let users = this.props.users.filter(item => 
+        item.userId === this.props.location.state.user_id);
+      if(this.state.Users.length === 0){
+        this.setState({
+          Users: users.map((item, key) => {return{...item, key}})
+        })
+      }
+    }
   }
+
+  componentDidUpdate(prevProps){
+    if(this.props.users !== prevProps.users){
+      this.setState({
+        Users: this.props.users.map((item, key) => {return{...item, key}})
+      });
+  }}
   
+  handleSearch = (e) => {
+    let searchQuery = e.target.value.toLowerCase();
+    let displayedUsers = this.props.users.filter((user) => {
+      let searchValue = user.name.toLowerCase();
+      return searchValue.indexOf(searchQuery) !== -1;
+    });
+    this.setState({
+      Users: displayedUsers,
+    })
+  }
+
   render() {
-    const { error, loading, users } = this.props;
+    const { error, loading } = this.props;
 
     if(error){
       return <div>error! {error.message}</div>
@@ -35,7 +63,7 @@ class MainLayout extends React.Component {
 
     return (
       <div> 
-        { 
+        {
           <div>
           <Layout style={{ height: '100vh'}}>
             <Sider
@@ -48,9 +76,15 @@ class MainLayout extends React.Component {
                 overflow: 'auto', height: '100vh' , position: 'fixed', left: 0, backgroundColor: 'white'
               }}
             >
+              <Input 
+                style={{ width: 280, margin: 10 }} 
+                placeholder="Find person..."
+                onChange={this.handleSearch}
+               
+              />
               <div className="logo" />
               <Menu theme="light" mode="inline">
-                {users.map((user) => {
+                {this.state.Users.map((user) => {
                   return(
                     <SubMenu key={user.id} title={<span><Icon type="idcard" />{user.name}</span>}>
                       <Menu.Item key={user.name+1}>

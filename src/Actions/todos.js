@@ -64,18 +64,18 @@ export const fetchTodos  = () => {
 }
 
 export const addNewTodo = (title) => {
-console.log('changeTodos', title);
-return (dispatch) => dispatch(addTodo(title));
+  console.log('changeTodos', title);
+  return (dispatch) => dispatch(addTodo(title));
 }
 
 export const updateOldTodo = (todo) => {
-console.log('updateOldTodo!:', todo);
-return (dispatch) => dispatch(updateTodo(todo));
+  console.log('updateOldTodo!:', todo);
+  return (dispatch) => dispatch(updateTodo(todo));
 }
 
 export const todoDelete = (id) => {
-console.log('todoDelete:', id);
-return (dispatch) => dispatch(deleteTodo(id));
+  console.log('todoDelete:', id);
+  return (dispatch) => dispatch(deleteTodo(id));
 }
 
 export const checkStatus = (todo) => {

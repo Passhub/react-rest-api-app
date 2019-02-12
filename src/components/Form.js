@@ -30,7 +30,8 @@ class HorizontalAddTodoForm extends React.Component {
       userId: this.props.props.location.state.user_id,
       id: v4(),
       title: JSON.stringify(value).slice(9, -2),
-      time: moment().valueOf() 
+      time: moment().valueOf(),
+      completed: false
     }));
     
   }
@@ -56,7 +57,7 @@ class HorizontalAddTodoForm extends React.Component {
     // Only show error after a field is touched.
     const userNameError = isFieldTouched('todo') && getFieldError('todo');
     return (
-      <Form layout="inline" onSubmit={this.handleSubmit} style={{ marginBottom: 10 }}>
+      <Form layout="inline" onSubmit={this.handleSubmit} style={{ margin: 0, padding: 0 }}>
         <Form.Item
           validateStatus={userNameError ? 'error' : ''}
           help={userNameError || ''}

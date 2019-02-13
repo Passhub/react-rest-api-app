@@ -4,10 +4,13 @@ import {
   FETCH_POSTS_FAILURE,
   REWRITE_POSTS_ID,
   UPDATE_POST,
-  DELETE_POST
+  DELETE_POST,
+  ADD_POST,
+  ADD_POSTS_TIME
 } from "../Actions/posts";
 
 const v4 = require('uuid/v4');
+const moment = require('moment');
 
 const initialState = {
   items: [],
@@ -47,6 +50,14 @@ export default function postsReducer(state = initialState, action){
       )]
     }
 
+    case ADD_POSTS_TIME:
+    return {
+      ...state,
+      items: [...state.items.filter(item =>
+        item.time = moment().valueOf()   
+      )]
+    }
+
     case UPDATE_POST:
     return {
       ...state,
@@ -66,7 +77,12 @@ export default function postsReducer(state = initialState, action){
           item.id !== action.payload 
         )]
       }
-
+    
+    case ADD_POST:
+      return {
+        ...state,
+        items: [...state.items, action.payload]
+      }
 
     default: 
       return state;

@@ -1,8 +1,9 @@
 import React from 'react';
 import { connect } from "react-redux";
-import { Icon, Collapse, Input, Button, Dropdown, Form, Menu} from 'antd';
+import { Icon, Collapse, Input } from 'antd';
+import DropdownMenu from './AddPostForm'
 
-import { updateOldPost, deleteOldPost } from '../Actions/posts'
+import { updateOldPost, deleteOldPost } from '../Actions/posts';
 
 const Panel = Collapse.Panel;
 
@@ -12,7 +13,6 @@ class Posts extends React.Component {
     dataSource: [],
     body: '',
     id: null,
-    visible: false
   }
   
   componentDidMount(){
@@ -31,7 +31,10 @@ class Posts extends React.Component {
     if(this.props.location !== prevProps.location || this.props.posts !== prevProps.posts){
       const posts = this.props.posts.filter(item => 
         item.userId === this.props.location.state.user_id
-      );
+      )
+      this.setState({
+        dataSource: this.props.posts.map((item, key) => {return{...item, key}}) 
+      })
       console.log('props.location changed')
       this.setState({
         dataSource: posts.map((item, key) => {return{...item, key}})
@@ -49,13 +52,15 @@ class Posts extends React.Component {
     this.props.dispatch(updateOldPost({body: this.state.body, id: this.state.id}))
   }
 
-  handleSubmit = (e) => {
-    e.preventDefault();
-    this.props.form.validateFields((err, values) => {
-      if (!err) {
-        console.log('Received values of form: ', values);
-      }
+  handleSearch = (e) => {
+    let searchQuery = e.target.value.toLowerCase();
+    let displayedPosts = this.props.posts.filter((post) => {
+      let searchValue = post.title.toLowerCase();
+      return searchValue.indexOf(searchQuery) !== -1;
     });
+    this.setState({
+      dataSource: displayedPosts,
+    })
   }
 
   render() {
@@ -72,42 +77,17 @@ class Posts extends React.Component {
       return <div style={{ textAlign: 'center', width: '100%', height: '80vh', lineHeight: '80vh' }}><Icon type="loading" /></div>
     }
 
-    const newPost = (
-      <div style={{ backgroundColor: '#fff', border: '1px solid #f0f0f0' }}>
-      <Form style={{ width: '80vh', margin: 20 }}>
-        <Form.Item>
-          <Input placeholder="Title"/>
-        </Form.Item>
-        <Form.Item>
-          <Input.TextArea placeholder="Your content"/>
-        </Form.Item>
-        <Form.Item>
-          <Button type="primary" htmlType="submit" className="login-form-button">
-            Add Post
-          </Button>
-        </Form.Item>
-      </Form>
-      </div>
-    )
-
     return(
-        <div style={{ height: '80vh', overflow: 'auto' }} >
-          <div style={{display: 'inline-flex'}}>
+        <div style={{ height: '80vh', overflow: 'auto', display: 'flex', flexDirection: 'column'}} >
+          <div style={{display: 'inline-flex', position: 'relative'}}>
           <h4>Posts</h4>
-            <Dropdown trigger={['click']} overlay={newPost} visible={this.state.visible}>
-              <Button
-                style={{ height: 25, width: 25, padding: 0, margin: '8px 0 0 10px' }}
-                onClick={() => {
-                  if(this.state.visible === false)
-                    this.setState({visible: true})
-                  else 
-                    this.setState({visible: false})
-                }}
-              >
-                <Icon type='plus' style={{ fontSize: 12 }}/>
-              </Button>
-            </Dropdown>
+            <DropdownMenu props={this.props}/>
+            <Input 
+              style={{ width: '30%', marginTop: 8, marginLeft: 'auto', marginRight: '3%' }}
+              placeholder="Find post..."
+              onChange={this.handleSearch}/>
           </div>
+          <div style={{ display: 'inline-flex', position: 'relative', width: '95%'  }}>
           <Collapse 
             bordered={false} 
             accordion={true} 
@@ -120,7 +100,6 @@ class Posts extends React.Component {
                   <Panel header={
                     <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
                       {post.title}
-                      <Icon onClick={() => {this.props.dispatch(deleteOldPost(this.state.id))}} type='delete'/>
                     </div>} key={post.id}
                   >
                     <Input.TextArea
@@ -137,6 +116,19 @@ class Posts extends React.Component {
                 )
               }})}
             </Collapse>
+            <div style={{ display: 'flex', flexDirection: 'column', height: '100%', position: 'absolute', left: '100%', justifyContent: 'space-around' }}>
+              {dataSource.map((post, index) => {
+                if(post.userId === location.state.user_id)
+                return (
+                  <Icon onClick={() => {this.props.dispatch(deleteOldPost(post.id))}} 
+                    type='delete'
+                    style={{ fontSize: 20 }}
+                    key={index}
+                    />
+                )
+              })}
+            </div>
+          </div>
         </div>
     )
   }
